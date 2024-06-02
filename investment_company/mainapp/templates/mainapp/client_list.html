@@ -1,0 +1,35 @@
+{% extends "mainapp/base_template.html" %}
+
+{% block title %}
+    <title>{{ title }}</title>
+{% endblock title %}
+
+{% block body %}
+    <h2 class="display-1 text-center pt-5">Всі клієнти</h2>
+    <div class="w-auto container-sm justify-content-center pt-5">
+        <table class="table table-stripped">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Ім'я</th>
+                    <th scope="col">Прізвище</th>
+                    <th scope="col">Електрона пошта</th>
+                    <th scope="col">Номер телефону</th>
+                    <th scope="col">Нікнейм в системі</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for client in clients %}
+                <tr>
+                    <th scope="row">{{ forloop.counter }}</th>
+                    <td>{{ client.name }}</td>
+                    <td>{{ client.surname }}</td>
+                    <td>{{ client.email }}</td>
+                    <td>{{ client.phone_number }}</td>
+                    <td>{{ client.account }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock body %}

@@ -1,0 +1,65 @@
+{% extends "mainapp/base_template.html" %}
+
+{% block title %}
+    <title>Повна інформація про {{ stock.symbol }}</title>
+{% endblock title %}
+
+{% load static %}
+{% block body %}
+    <h1 class="has-bg-img p-5 text-light"  style="background-image: url('{% static 'mainapp/img/default_stock.jpg'%}');background-repeat: no-repeat; background-size: cover;">
+        {{stock.company_name}}({{ stock.symbol }})
+        {% if stock.net_change > 0 %}
+            <span class="text-success">▲ +{{stock.net_change}}$(+{{stock.percent_change}}%)</span>
+        {% elif stock.net_change < 0 %}
+            <span class="text-danger">▼ {{stock.net_change}}$({{stock.percent_change}}%)</span>
+        {% endif %}
+    </h1>
+    <div class="container">
+        <div class="row">
+            <p class="col"><b>Компанія: </b> {{ stock.company_name }}</p>
+            <p class="col"><b>Країна: </b>{{ stock.country }}</p>
+            <p class="col"><b>IPO: </b>{{ stock.ipo }}</p>
+        </div>
+        <div class="row">
+            <p class="col"><b>Ціна: </b>{{ stock.current_price }}</p>
+            <p class="col"><b>Зміна: </b>{{ stock.net_change }}$</p>
+            <p class="col"><b>Зміна в відсотках: </b>{{ stock.percent_change }}%</p>
+        </div>
+        <div class="row">
+            <p class="col"><b>Об'єм: </b>{{ stock.volume }}</p>
+            <p class="col"><b>Капіталізація ринку: </b>{{ stock.market_capitalization }}</p>
+            <p class="col"><b>Остання перевірка ціни: </b>{{ stock.last_price_change }}</p>
+        </div>
+        <div class="row">
+            <p class="col-4"><b>Сектор: </b>{{ stock.sector }}</p>
+            <p class="col-4"><b>Індустрія: </b>{{ stock.industry }}</p>
+        </div>
+        <div class="w-50 d-flex align-items-center justify-content-center">
+            <canvas id="myChart"></canvas>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById('myChart');
+        const regex = new RegExp("a\.m\.|p\.m\.")
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [{% for stock_legend in stock.stockprice_set.all %}new Date('{{stock_legend.save_date}}'.replace(regex, '')).toISOString().split('T')[0],{% endfor %}],
+                datasets: [{
+                    label: 'Історія цін {{stock.symbol}}',
+                    fill: true,
+                    data: [{% for stock_legend in stock.stockprice_set.all %}parseFloat("{{stock_legend.price}}"),{% endfor %}],
+                    borderWidth: 1
+                }]
+                },
+                options: {
+                scales: {
+                    y: {
+                    beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+{% endblock body %}

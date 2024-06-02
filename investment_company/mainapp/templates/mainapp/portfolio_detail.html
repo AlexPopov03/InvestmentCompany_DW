@@ -1,0 +1,118 @@
+{% extends "mainapp/base_template.html" %}
+
+{% block additional_includes %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock additional_includes %}
+
+{% block title %}
+    <title>{{ portfolio}}</title>
+{% endblock title %}
+
+{% load mainapp_filters %}
+{% block body %}
+        <h1 class="display-1 border-bottom pb-3 mb-5 text-center">{{ portfolio.portfolio_name }}</h1>
+        <div class="container">
+            <div class="row">
+                <div class="col-6">
+                    <canvas id="portfolioChart"></canvas>
+                    <script>
+                        const chart = document.getElementById('portfolioChart');
+                        new Chart(chart, {
+                            type: 'pie',
+                            data: {
+                                labels: [{% for symbol in portfolio.get_all_buy_stock_symbols %}'{{symbol}}',{% endfor %}],
+                                datasets: [{
+                                    label: "Загальна вартість, $",
+                                    data: [{% for symbol, price in portfolio.get_all_buy_stock_prices.items %}parseFloat('{{price}}'),{% endfor %}],
+                                    hoverOffset: 4
+                                }]
+                            }
+                        });
+                    </script>
+                </div>
+                <div class="col">
+                    <p class="row"><span>Інвестиції в портфель: {{ portfolio.investment }}$</span></p>
+                    <p class="row"><span>Вартість усіх акцій в портфелі: {{ portfolio.value }}$</span></p>
+                    <p class="row">{% if portfolio.profit < 0 %}<span class="text-danger">Збиток: {{ portfolio.profit }}$</span>{% else %}<span>Прибуток: {{ portfolio.profit }}$</span>{% endif %}</p>
+                    <div class="row">
+                        <div class="container-sm justify-content-center pt-5">
+                            <h5 class="text-center mb-3">Список акцій в портфелі</h5>
+                            <table class="table table-bordered table-stripped">
+                                <thead>
+                                    <tr class="text-center align-middle">
+                                        <th scope="col">#</th>
+                                        <th scope="col">Акція</th>
+                                        <th scope="col">Ціна</th>
+                                        <th scope="col">Зміна</th>
+                                        <th scope="col">Зміна %</th>
+                                        <th scope="col">Кількість</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for stock in portfolio.get_all_related_buy_stocks %}
+                                    <tr>
+                                        <th scope="row" class="text-center">{{forloop.counter}}</th>
+                                        <td> <a href="{% url 'stock_detail' stock.pk%}">{{ stock.symbol }}</a></td>
+                                        <td>{{ stock.current_price }}$</td>
+                                        <td> 
+                                            {% if stock.net_change > 0 %}
+                                                <span class="text-success">▲{{stock.net_change}}$</span>
+                                            {% elif stock.net_change < 0 %}
+                                                <span class="text-danger">▼{{stock.net_change}}$</span>
+                                            {% else %}
+                                            {{stock.net_change}}$
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if stock.percent_change > 0 %}
+                                                <span class="text-success">▲ {{stock.percent_change}}%</span>
+                                            {% elif stock.percent_change < 0 %}
+                                                <span class="text-danger">▼ {{stock.percent_change}}%</span>
+                                            {% else %}
+                                            {{stock.percent_change}}%
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ portfolio.get_all_related_stocks_ammount|get_item:stock.symbol }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="container-sm justify-content-center pt-5">
+                    <h5 class="text-center mb-3">Список всіх транзакцій</h5>
+                    <table class="table table-bordered table-stripped">
+                        <thead>
+                            <tr class="text-center align-middle">
+                                <th scope="col">#</th>
+                                <th scope="col">Акція</th>
+                                <th scope="col">Кількість акцій</th>
+                                <th scope="col">Вартість операції</th>
+                                <th scope="col">Дата операції</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transaction in portfolio.transaction_set.all %}
+                            <tr>
+                                <th scope="row" class="text-center">{{forloop.counter}}</th>
+                                <td> <a href="{% url 'stock_detail' transaction.stock.pk%}">{{ transaction.stock.symbol }}</a></td>
+                                <td>{{ transaction.stock_ammount }}</td>
+                                <td> 
+                                    {% if transaction.transaction_type == 'BUY' %}
+                                        <span class="text-danger">-{{transaction.price|floatformat:2}}$</span>
+                                    {% else%}
+                                        <span class="text-success">+{{transaction.price|floatformat:2}}$</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">{{ transaction.deal_date }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+{% endblock body %}

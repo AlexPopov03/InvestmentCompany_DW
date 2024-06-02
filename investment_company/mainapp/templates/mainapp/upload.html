@@ -1,0 +1,18 @@
+{% extends "mainapp/base_template.html" %}
+
+{% block title %}
+    <title>{{title}}</title>
+{% endblock title %}
+{% load crispy_forms_tags %}
+{% block body %}
+<div class="w-25 container-sm justify-content-center pt-5">
+    <legend class="border-bottom mb-4 text-center">Додати інформацію про акції з CSV файлу</legend>
+    <form enctype="multipart/form-data" action="{% url "upload_csv" %}" method="post">
+        {% csrf_token %}
+        {{form|crispy}}
+        <div class="text-center">
+            <button class="btn btn-outline-info" type="submit">Завантажити</button>
+        </div>
+    </form>
+</div>
+{% endblock body %}

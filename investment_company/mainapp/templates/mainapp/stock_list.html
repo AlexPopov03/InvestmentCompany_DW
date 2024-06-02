@@ -1,0 +1,99 @@
+{% extends "mainapp/base_template.html" %}
+
+{% block title %}
+    <title>{{ title }}</title>
+{% endblock title %}
+
+{% block body %}
+    <h2 class="display-1 text-center pt-5 pb-4">Всі акції</h2>
+    {% if is_paginated %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link" href="{% url 'stock_list' %}?page={{page_obj.previous_page_number}}">&laquo;</a></li>
+                    <li class="page-item"><a class="page-link" href="{% url 'stock_list' %}?page=1">1</a></li>
+                    {% if page_obj.previous_page_number > 1 %}
+                        <li class="page-item text-primary"><a class="page-link" href="#">...</a></li>
+                        <li class="page-item"><a class="page-link" href="{% url 'stock_list' %}?page={{page_obj.previous_page_number}}">{{page_obj.previous_page_number}}</a></li>
+                    {% endif %}
+                {% endif %}
+                <li class="page-item"><a class="page-link disabled" href="#">{{ page_obj.number }}</a></li>
+                {% if page_obj.has_next %}
+                    {% if page_obj.next_page_number < page_obj.paginator.num_pages %}
+                        <li class="page-item"><a class="page-link" href="{% url 'stock_list' %}?page={{page_obj.next_page_number}}">{{page_obj.next_page_number}}</a></li>
+                        <li class="page-item text-primary"><a class="page-link" href="#">...</a></li>
+                    {% endif %}
+                    <li class="page-item"><a class="page-link" href="{% url 'stock_list' %}?page={{page_obj.paginator.num_pages}}">{{page_obj.paginator.num_pages}}</a></li>
+                    <li class="page-item"><a class="page-link" href="{% url 'stock_list' %}?page={{page_obj.next_page_number}}">&raquo;</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+    <div class="w-auto container-sm justify-content-center pt-5">
+        <table class="table table-bordered table-stripped">
+            <thead>
+                <tr class="text-center align-middle">
+                    <th scope="col">#</th>
+                    <th scope="col">Символ</th>
+                    <th scope="col">Компанія</th>
+                    <th scope="col">Ціна</th>
+                    <th scope="col">Зміна</th>
+                    <th scope="col">Зміна %</th>
+                    <th scope="col">Країна</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for stock in stocks %}
+                <tr>
+                    <th scope="row">{{ forloop.counter0|add:page_obj.start_index }}</th>
+                    <td> <a href="{% url 'stock_detail' stock.pk%}">{{ stock.symbol }}</a></td>
+                    <td>{{ stock.company_name }}</td>
+                    <td>{{ stock.current_price }}$</td>
+                    <td> 
+                        {% if stock.net_change > 0 %}
+                            <span class="text-success">▲{{stock.net_change}}$</span>
+                        {% elif stock.net_change < 0 %}
+                            <span class="text-danger">▼{{stock.net_change}}$</span>
+                        {% else %}
+                        {{stock.net_change}}$
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if stock.percent_change > 0 %}
+                            <span class="text-success">▲ {{stock.percent_change}}%</span>
+                        {% elif stock.percent_change < 0 %}
+                            <span class="text-danger">▼ {{stock.percent_change}}%</span>
+                        {% else %}
+                        {{stock.percent_change}}%
+                        {% endif %}
+                    </td>
+                    <td>{% if stock.country %} {{ stock.country }} {% else %} None {% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if is_paginated %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link" href="{% url 'stock_list' %}?page={{page_obj.previous_page_number}}">&laquo;</a></li>
+                    <li class="page-item"><a class="page-link" href="{% url 'stock_list' %}?page=1">1</a></li>
+                    {% if page_obj.previous_page_number > 1 %}
+                        <li class="page-item text-primary"><a class="page-link" href="#">...</a></li>
+                        <li class="page-item"><a class="page-link" href="{% url 'stock_list' %}?page={{page_obj.previous_page_number}}">{{page_obj.previous_page_number}}</a></li>
+                    {% endif %}
+                {% endif %}
+                <li class="page-item"><a class="page-link disabled" href="#">{{ page_obj.number }}</a></li>
+                {% if page_obj.has_next %}
+                    {% if page_obj.next_page_number < page_obj.paginator.num_pages %}
+                        <li class="page-item"><a class="page-link" href="{% url 'stock_list' %}?page={{page_obj.next_page_number}}">{{page_obj.next_page_number}}</a></li>
+                        <li class="page-item text-primary"><a class="page-link" href="#">...</a></li>
+                    {% endif %}
+                    <li class="page-item"><a class="page-link" href="{% url 'stock_list' %}?page={{page_obj.paginator.num_pages}}">{{page_obj.paginator.num_pages}}</a></li>
+                    <li class="page-item"><a class="page-link" href="{% url 'stock_list' %}?page={{page_obj.next_page_number}}">&raquo;</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+{% endblock body %}

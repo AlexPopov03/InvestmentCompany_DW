@@ -1,0 +1,22 @@
+{% extends "mainapp/base_template.html" %}
+
+{% block title %}
+    <title>Створення новго портфелю</title>
+{% endblock title %}
+
+{% load crispy_forms_tags %}
+
+{% block body %}
+    <div class="w-25 container-sm justify-content-center pt-5">
+        <form method="POST" class="border-bottom pb-3">
+            {% csrf_token %}
+            <fieldset class="form-group">
+                <legend class="border-bottom mb-4">Створення нового портфелю</legend>
+                {{ form|crispy }}
+            </fieldset>
+            <div class="text-center">
+                <button class="btn btn-outline-info" type="submit">Створити</button>
+            </div>
+          </form>
+    </div>
+{% endblock body %}

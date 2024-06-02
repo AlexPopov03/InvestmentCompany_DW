@@ -1,0 +1,28 @@
+{% extends "mainapp/base_template.html" %}
+
+{% load crispy_forms_tags %}
+
+{% block title %}
+  <title>{{ title }}</title>
+{% endblock title %}
+
+{% block body %}
+<div class="w-25 container-sm justify-content-center pt-5">
+    <form method="POST" class="border-bottom pb-3">
+      {% csrf_token %}
+      <fieldset class="form-group">
+        <legend class="border-bottom mb-4">Створення нового користувача</legend>
+        {{ form|crispy }}
+      </fieldset>
+      <div class="text-center">
+        <button class="btn btn-outline-info" type="submit">Зареєструватись</button>
+      </div>
+    </form>
+    <div class="border-top p-3">
+        <small class="text-muted">
+          Вже є аккаунт?
+          <a class="ml-2" href="{% url 'login' %}">Увійти</a>
+        </small>
+      </div>
+</div>
+{% endblock body %}

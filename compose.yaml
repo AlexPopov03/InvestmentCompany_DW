@@ -1,0 +1,59 @@
+version: '3.9'
+services:
+  postgres:
+    container_name: django_postgres_DB
+    image: postgres:14.8-alpine3.18
+    environment:
+      POSTGRES_DB: "django_db"
+      POSTGRES_USER: "django_admin"
+      POSTGRES_PASSWORD: "postgres4django"
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+    volumes:
+      - ./DB:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U django_admin -d django_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - postgres
+
+  pgadmin:
+    container_name: pgadmin_container
+    image: dpage/pgadmin4:7.2
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "django.admin@djnago.com"
+      PGADMIN_DEFAULT_PASSWORD: "postgres4django"
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    ports:
+      - "5050:80"
+    restart: unless-stopped
+    networks:
+      - postgres
+
+  django:
+    build: ./investment_company
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./investment_company/:/usr/src/django_app/
+    networks:
+      - postgres
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+
+
+
+volumes:
+  DB:
+  pgadmin-data:
+
+networks:
+  postgres:
+    driver: bridge

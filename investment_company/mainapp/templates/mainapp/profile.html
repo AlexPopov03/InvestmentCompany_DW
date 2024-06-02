@@ -1,0 +1,140 @@
+{% extends "mainapp/base_template.html" %}
+
+{% block additional_includes %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock additional_includes %}
+
+{% block title %}
+    <title>Профіль {{user.username}}</title>
+{% endblock title %}
+
+{% load static %}
+
+{% block body %}
+    {% if user.client.first_login %}
+    <div class="container-sm justify-content-center pt-5 text-center">
+        <h2 class="display-2 text-center">Ви ще не вели обов'язкову додаткову інформацію про себе</h2>
+        <div class="border-top pt-3">
+                <a class="btn btn-primary" href="{% url 'client_update' user.client.pk %}">Перейти до форми</a>
+        </div>
+    </div>
+    {% else %}
+    <div class='d-flex justify-content-center'>
+        <div class="container">
+            <div class="row p-3">
+                <div id="profilePageHeader" class="container" style="background-image: url('{% static 'mainapp/img/default_bg.jpg'%}');background-repeat: no-repeat; background-size: cover;">
+                    <div class="row align-items-center">
+                        <img src="https://static.vecteezy.com/system/resources/thumbnails/002/534/006/small/social-media-chatting-online-blank-profile-picture-head-and-body-icon-people-standing-icon-grey-background-free-vector.jpg" class="col-3 img-fluid">
+                        <h1 class="col display-1 text-light">{{ user.username }}</h1>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="portfolio-tab" data-bs-toggle="tab" data-bs-target="#portfolio-tab-pane" type="button" role="tab" aria-controls="portfolio-tab-pane" aria-selected="true">Ваші інвестиційні портфелі</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-tab-pane" type="button" role="tab" aria-controls="profile-tab-pane" aria-selected="false">Дані профіля</button>
+                    </li>
+                </ul>
+                <div class="tab-content border" id="myTabContent">
+                    <div class="tab-pane fade show active" id="portfolio-tab-pane" role="tabpanel" aria-labelledby="portfolio-tab" tabindex="0">
+                        {% if user.client.portfolio_set.all %}
+                            <div class="accordion p-3 m-3" id="portfolioAccordion">
+                                {% for portfolio in user.client.portfolio_set.all %}
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button {% if forloop.counter != 1 %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ forloop.counter }}" aria-expanded="{% if forloop.counter == 1 %}true{% else %}false{% endif %}" aria-controls="collapse{{ forloop.counter }}">
+                                                {{ portfolio.portfolio_name }}
+                                            </button>
+                                        </h2>
+                                        <div id="collapse{{ forloop.counter }}" class="accordion-collapse collapse {% if forloop.counter == 1 %}show{% endif %}" data-bs-parent="#portfolioAccordion">
+                                            <div class="accordion-body">
+                                                <div class="container">
+                                                {% if portfolio.transaction_set.all %}
+                                                    <div class="row">
+                                                        <div class="col">
+                                                            <p class="row"><h3 class="display-3">Вартість акцій: {{ portfolio.value }}$</h3></p>
+                                                            <p class="row"><h3 class="display-3">{% if portfolio.profit < 0 %}<span class="text-danger">Збиток: {{ portfolio.profit }}$</span>{% else %}<span>Прибуток: {{ portfolio.profit }}$</span>{% endif %}</h3></p>
+                                                        </div>
+                                                        <div class="col-4">
+                                                            <canvas id="portfolio{{forloop.counter}}Chart"></canvas>
+                                                            <script>
+                                                                const chart{{ forloop.counter }} = document.getElementById('portfolio{{forloop.counter}}Chart');
+                                                                new Chart(chart{{ forloop.counter }}, {
+                                                                    type: 'pie',
+                                                                    data: {
+                                                                        labels: [{% for symbol in portfolio.get_all_buy_stock_symbols %}'{{symbol}}',{% endfor %}],
+                                                                        datasets: [{
+                                                                            label: "Загальна вартість, $",
+                                                                            data: [{% for symbol, price in portfolio.get_all_buy_stock_prices.items %}parseFloat('{{price}}'),{% endfor %}],
+                                                                            hoverOffset: 4
+                                                                        }]
+                                                                    }
+                                                                });
+                                                            </script>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-1">
+                                                            <a class="btn btn-primary" href="{% url 'portfolio_detail' portfolio.pk %}">Деталі</a>
+                                                        </div>
+                                                        <div class="col-2">
+                                                            <a class="btn btn-success" href="{% url 'transaction_create' %}">Купити/Продати акції</a>
+                                                        </div>
+                                                    </div>
+                                                {% else %}
+                                                    <div class="row">
+                                                        <div class="col">
+                                                            З даним портфелем ще не було виконано ніяких транзакцій. Будь ласка, перейдіть за <a href="{% url 'transaction_create' %}">посиланням</a> та підтвердіть транзакції.
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <div class="row">
+                                <div class="col-4">
+                                    <a class="btn btn-primary p-3 m-3" href="{% url 'portfolio_create'%}">Створити новий портфель</a>
+                                </div>
+                            </div>
+                        {% else %}
+                        <div class="text-center">
+                            <a class="btn btn-link p-3 m-3" href="{% url 'portfolio_create'%}">Створити новий інвестиційний портфель</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">
+                        {% if user.client %}
+                            <div class="w-75 container p-3 m-3">
+                                <div class="row">
+                                    <p class="display-6 border-bottom p-3">Дані користувача</p>
+                                    <div class="col">Нікнейм: {{ user.username }}</div>
+                                </div>
+                                <div class="row">
+                                    <p class="display-6 border-bottom p-3">Дані клієнта</p>
+                                    <div class="row pb-4">
+                                        <div class="col">Ім'я: {{ user.client.name }}</div>
+                                        <div class="col">Прізвище: {{ user.client.surname }}</div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col">Електрона пошта: {{ user.client.email }}</div>
+                                        <div class="col">Номер телефону: {{ user.client.phone_number }}</div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <a class="col-4 btn btn-primary mt-3" href="{% url 'client_update' user.client.pk %}">Змінити дані</a>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+{% endblock body %}

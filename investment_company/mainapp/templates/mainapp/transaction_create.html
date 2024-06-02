@@ -1,0 +1,28 @@
+{% extends "mainapp/base_template.html" %}
+
+{% block title %}
+    <title>Створення транзакції</title>
+{% endblock title %}
+
+{% load crispy_forms_tags %}
+
+{% block body %}
+<div class="w-25 container-sm justify-content-center pt-5">
+    <form method="POST" class="border-bottom pb-3">
+        {% csrf_token %}
+        <fieldset class="form-group">
+            <legend class="border-bottom mb-4">Створення транзакції</legend>
+            {{ form|crispy }}
+        </fieldset>
+        <div class="text-center">
+            <button class="btn btn-outline-info" type="submit">Створити</button>
+        </div>
+      </form>
+</div>
+<script
+    src="https://code.jquery.com/jquery-3.7.1.js"
+    integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
+    crossorigin="anonymous"></script>
+{{ form.media }}
+
+{% endblock body %}
